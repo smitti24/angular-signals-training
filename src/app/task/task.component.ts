@@ -1,12 +1,13 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TaskService } from './task.service';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-task',
-  imports: [],
+  imports: [NgClass],
   templateUrl: './task.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TaskComponent {
-  readonly taskService = inject(TaskService)
-
+  taskService = inject(TaskService)
 }

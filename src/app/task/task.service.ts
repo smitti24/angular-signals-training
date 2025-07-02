@@ -23,6 +23,13 @@ export class TaskService {
     this._tasks.update((tasks: Task[]) => [...tasks, newTask]); // Immutable update
   }
 
+  toggleTask(id: string) {
+    this._tasks.update((tasks: Task[]) => tasks.map(task => task.id === id ? {
+      ...task,
+      completed: !task.completed
+    } : task))
+  }
+
   deleteTask(id: string) {
     this._tasks.update((tasks: Task[]) => tasks.filter((t) => t.id === id));
   }
