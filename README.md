@@ -1,59 +1,87 @@
-# SignalsTaskManagementApp
+# 📚 Angular Signals Day By Day Learning Plan
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.5.
+> **A comprehensive journey to master Angular Signals through theory and practical application**
 
-## Development server
+This project serves as a structured lesson plan to learn Angular Signals. It follows a day-by-day approach combining theoretical concepts with hands-on practice. By the end of this journey, you'll have mastered Angular Signals and built a fully functional application.
 
-To start a local development server, run:
+---
 
-```bash
-ng serve
+## 🎯 Day 1: Signals Theory – The Fundamentals
+
+### 🔍 What is a Signal?
+
+A **Signal** is a reactive value container that:
+
+- 📦 **Holds a piece of data** (like a variable)
+- 🔔 **Notifies everyone** when that data changes
+- 🔗 **Tracks dependencies automatically** (no manual subscriptions needed)
+
+#### 💡 Analogy: Spreadsheet Cell
+Think of a cell in Excel:
+- If `A1 = 5` and `B1 = A1 + 5`
+- Updating `A1` automatically updates `B1`
+- **Signals work exactly the same way!**
+
+### 🚀 Why Signals? What Problem Do They Solve?
+
+#### ⚠️ Before Signals:
+- Angular relied heavily on **Zone.js** for change detection
+- **RxJS Observables** were overkill for simple state management
+
+#### ✅ After Signals:
+- 🎯 **Granular Updates**: Only components using changed Signals re-render
+- 🔧 **Simpler Syntax**: No `.subscribe()` or `| async` pipes required
+- 🐛 **Predictable**: Synchronous by default, making debugging easier
+
+### 🔍 Core Signal API
+
+#### 📦 Creating a Signal
+
+Import the signal function from Angular core:
+```typescript
+import { signal } from '@angular/core'
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+Create a signal with an initial value:
+```typescript
+const count = signal(0) // Initial value is 0
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+> 💡 **Note**: `signal()` returns a **getter** function with **setter** methods attached
 
-```bash
-ng generate --help
+#### 📖 Reading a Signal
+
+To read the current value, call the signal as a function:
+```typescript
+console.log(count()) // Outputs: 0
 ```
 
-## Building
+#### ✏️ Updating a Signal
 
-To build the project run:
+There are two main methods to update signals:
 
-```bash
-ng build
+**1. `set()` Method** - Direct value assignment
+```typescript
+count.set(5) // Sets the value directly to 5
+```
+> 💭 *"Here is the new value"*
+
+**2. `update()` Method** - Functional update
+```typescript
+count.update((currentValue) => currentValue + 1) // Increments by 1
+```
+> 💭 *"Here is how to calculate the new value"*
+
+#### ❓ Common Questions
+
+**Q: Can I use `set()` on a `const` signal?**  
+**A:** Yes! The `const` keyword prevents reassigning the signal variable itself, but you can still call methods like `set()` and `update()` on the signal object.
+
+```typescript
+const count = signal(0) // ✅ This is fine
+count.set(5)           // ✅ This works - we're calling a method
+// count = signal(10)  // ❌ This would fail - reassignment not allowed
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
-## Running unit tests
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
