@@ -1,5 +1,11 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { Task } from './task.model';
+
+export enum Filter {
+  'ALL' = 'All',
+  'PENDING' = 'Pending',
+  'COMPLETED' = 'Completed'
+}
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +18,22 @@ export class TaskService {
     completed: false
   }]);
   tasks = this._tasks.asReadonly();
+
+  private _filter = signal<Filter>(Filter.ALL)
+  activeFilter = this._filter.asReadonly();
+
+  completedTasksCount = computed(() => this._tasks().filter((t) => t.completed).length);
+  pendingTasksCount = computed(() => this._tasks().length - this.completedTasksCount());
+  filteredTasks = computed(() => {
+    const tasks = this._tasks();
+
+    switch (this._filter()) {
+      case 'All': return tasks
+      case 'Pending': return tasks.filter(t => !t.completed)
+      case 'Completed': return tasks.filter(t => t.completed)
+      default: return tasks
+    }
+  })
 
   addTask(task: string) {
     const newTask: Task = {
@@ -30,7 +52,11 @@ export class TaskService {
     } : task))
   }
 
+  toggleFilter(filter: Filter) {
+    this._filter.set(filter);
+  }
+
   deleteTask(id: string) {
-    this._tasks.update((tasks: Task[]) => tasks.filter((t) => t.id === id));
+    this._tasks.update((tasks: Task[]) => tasks.filter((t) => t.id !== id));
   }
 }

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { TaskService } from './task.service';
+import { Filter, TaskService } from './task.service';
 import { NgClass } from '@angular/common';
 
 @Component({
@@ -10,4 +10,5 @@ import { NgClass } from '@angular/common';
 })
 export class TaskComponent {
   taskService = inject(TaskService)
+  Filter = Filter
 }

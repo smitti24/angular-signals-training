@@ -13,12 +13,57 @@
           <p class="text-sm text-gray-500 mt-2">Press Enter to add</p>
         </div>
       </div>
-      
-      <!-- Tasks Section -->
-      <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Your Tasks</h2>
+
+      <div class="flex flex-row justify-between items-center mb-8">
+        <!-- Filter Buttons -->
+        <div class="flex gap-3">
+          <button 
+            class="px-5 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg h-12 flex items-center"
+            [ngClass]="taskService.activeFilter() === Filter.ALL ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-blue-300'"
+            (click)="taskService.toggleFilter(Filter.ALL)">
+            📋 All Tasks
+          </button>
+          
+          <button 
+            class="px-5 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg h-12 flex items-center"
+            [ngClass]="taskService.activeFilter() === Filter.PENDING ? 'bg-orange-500 text-white' : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-orange-300'"
+            (click)="taskService.toggleFilter(Filter.PENDING)">
+            ⏳ Pending
+          </button>
+          
+          <button 
+            class="px-5 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg h-12 flex items-center"
+            [ngClass]="taskService.activeFilter() === Filter.COMPLETED ? 'bg-green-500 text-white' : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-green-300'"
+            (click)="taskService.toggleFilter(Filter.COMPLETED)">
+            ✅ Completed
+          </button>
+        </div>
+
+        <!-- Task Statistics -->
+        <div class="flex items-center">
+          @if (taskService.pendingTasksCount() > 0) { 
+            <div class="flex items-center gap-4 bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-3 rounded-2xl shadow-lg border border-orange-200">
+              <div class="flex items-center gap-2 bg-green-100 px-3 py-1 rounded-full">
+                <span class="text-green-600">✅</span>
+                <span class="text-green-800 font-semibold text-sm">{{ taskService.completedTasksCount() }} Done</span>
+              </div>
+              <div class="flex items-center gap-2 bg-orange-100 px-3 py-1 rounded-full">
+                <span class="text-orange-600">⏳</span>
+                <span class="text-orange-800 font-semibold text-sm">{{ taskService.pendingTasksCount() }} Left</span>
+              </div>
+            </div>
+          } @else {
+            <div class="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-3 rounded-2xl shadow-lg border border-green-200">
+              <span class="text-green-600 text-xl">🎉</span>
+              <span class="text-green-800 font-semibold">All Done!</span>
+              <span class="text-green-600 text-xl">🎉</span>
+            </div>
+          }
+        </div>
+      </div>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 justify-items-center">
-        @for (task of taskService.tasks(); track task.id) {
+        @for (task of taskService.filteredTasks(); track task.id) {
           <div class="bg-white p-4 rounded-lg shadow-md border-l-4 transition-shadow hover:shadow-lg w-[280px]" 
                [ngClass]="{'border-green-500': task.completed, 'border-orange-500': !task.completed}"> 
             
@@ -49,11 +94,13 @@
               {{ task.title }}
             </p>
   
+            @if (taskService.tasks().length > 1) {
             <button 
               class="w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors"
               (click)="taskService.deleteTask(task.id)">
               Delete
             </button>
+            }
           </div>
         }
       </div>
