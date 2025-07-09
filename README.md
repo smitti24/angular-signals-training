@@ -201,6 +201,181 @@ const data = computed(() => {
 
 > **When to use `untracked()`**: When you need to read a signal's value without creating a dependency
 
+## Day 3: Signal Effects & Side Effects
 
+### What is an `effect()`?
 
+An **effect** is a reactive side effect that:
 
+1. **Runs when its signal dependencies change**
+2. **Automatically tracks dependencies** like `computed()`
+3. **Used for:**
+   - Saving to LocalStorage
+   - Logging analytics
+   - Triggering DOM updates outside of Angular
+
+#### How Does an `effect()` Work?
+
+**Automatic Dependency Tracking:**
+```typescript
+effect(() => console.log(count())) // Logs when `count` changes
+```
+
+**Cleanup Mechanism:**
+```typescript
+effect((onCleanup) => {
+    const timer = setInterval(() => {}, 1000)
+    onCleanup(() => clearInterval(timer))
+})
+```
+
+**Runs Once Immediately:** By default, executes when first created.
+
+#### Under the Hood
+
+1. Angular records signals read inside the effect
+2. When any dependency changes, the effect re-runs
+3. Cleanup runs before the next execution
+
+### When to Use `effect()`
+
+| **Use Case** | **Example** |
+|-------------|-------------|
+| **Persisting Data** | Auto-save to LocalStorage |
+| **Analytics** | Log button clicks |
+| **Non-Angular DOM Updates** | Integrating with vanilla JS libraries |
+
+### Anti-Patterns ⚠️
+
+**❌ Do NOT:**
+- Modify signals inside effects (could cause infinite loops)
+- Perform heavy synchronous work (could block the main thread)
+
+**✅ DO:**
+- Use for side effects only
+- Keep effects lightweight and async when possible
+- Use cleanup functions for proper resource management
+
+### Advanced `effect()` Patterns
+
+#### 1. Conditional Effects
+
+Use `untracked()` to prevent unnecessary re-runs:
+
+```typescript
+import { effect, untracked } from '@angular/core'
+
+effect(() => {
+    const user = untracked(() => userService.user()) // Prevents re-triggering when user changes
+    
+    if (user) {
+        console.log('Task count:', this._tasks().length)
+    }
+})
+```
+
+> **Why use `untracked()`?** It reads the signal value without creating a dependency, preventing the effect from re-running when `user` changes.
+
+#### 2. Debounced Effects
+
+Combine signals with RxJS for advanced patterns:
+
+```typescript
+import { effect } from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
+import { debounceTime } from 'rxjs/operators'
+
+effect((onCleanup) => {
+    const subscription = toObservable(this._tasks)
+        .pipe(debounceTime(1000))
+        .subscribe(() => saveToServer())
+    
+    onCleanup(() => subscription.unsubscribe())
+})
+```
+
+> **Use Case:** Debounce expensive operations like API calls or localStorage saves to improve performance.
+
+#### 3. Effect Cleanup Best Practices
+
+| **Resource Type** | **Cleanup Example** |
+|-------------------|---------------------|
+| **Timers** | `onCleanup(() => clearInterval(timer))` |
+| **Subscriptions** | `onCleanup(() => sub.unsubscribe())` |
+| **Event Listeners** | `onCleanup(() => element.removeEventListener(...))` |
+| **WebSocket** | `onCleanup(() => socket.close())` |
+
+```typescript
+effect((onCleanup) => {
+    const timer = setInterval(() => {
+        console.log('Periodic task')
+    }, 1000)
+    
+    onCleanup(() => clearInterval(timer))
+})
+```
+### Effect Batching & Performance Optimization
+
+#### Multiple Dependencies in a Single Effect
+
+You can track multiple signals within the same `effect()`:
+
+```typescript
+const signalA = signal(1)
+const signalB = signal(2)
+
+effect(() => {
+    console.log('A:', signalA(), 'B:', signalB())
+    // This effect depends on both signalA and signalB
+})
+```
+
+#### How Angular Handles Batching
+
+When multiple dependencies change simultaneously, Angular uses **smart batching** to optimize performance:
+
+| **Phase** | **What Happens** |
+|-----------|------------------|
+| **1. Signal Changes** | `signalA` changes, then `signalB` changes shortly after |
+| **2. Stale Marking** | Effect is marked as "stale" but doesn't run immediately |
+| **3. Microtask Queue** | Angular waits for the end of the current microtask |
+| **4. Batch Execution** | Effect runs **once** with the latest values of both signals |
+
+#### Example: Batching in Action
+
+```typescript
+const count = signal(0)
+const multiplier = signal(2)
+
+effect(() => {
+    console.log('Result:', count() * multiplier())
+})
+
+// Trigger multiple changes
+count.set(5)      // Effect marked as stale
+multiplier.set(3) // Effect still stale
+
+// At the end of microtask queue:
+// Effect runs ONCE with count = 5 and multiplier = 3
+// Output: "Result: 15"
+```
+
+#### Benefits of Batching
+
+- **Performance**: Prevents redundant effect executions
+- **Consistency**: Always works with the latest values
+- **Predictability**: Effects run in a controlled, batched manner
+
+> **Key Insight**: This batching mechanism ensures your effects are efficient and don't cause unnecessary re-renders or computations.
+
+You can force Synchronous updates:
+```typescript
+tasks.set([...tasks()])
+queueMicrotask(() => filter.set('active')) // Effect will run twice
+```
+
+#### Key Takeaway
+
+✅ Normally: Effects batch updates for performance.
+✅ Edge Cases: Async operations (setTimeout, HTTP) can split batches.
+✅ Debug Tip: Use effect.onTrigger(() => console.log('Triggered')) to log dependency changes.

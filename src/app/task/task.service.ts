@@ -1,5 +1,6 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, effect } from '@angular/core';
 import { Filter, Task } from './task.model';
+import { LocalStorage } from '../shared/enums/localstorage.enum';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,35 @@ export class TaskService {
 
   private _filter = signal<Filter>(Filter.ALL)
   activeFilter = this._filter.asReadonly();
+
+  constructor() {
+    const tasksCache: string | null = localStorage.getItem(LocalStorage.TASKS)
+
+    if (tasksCache) {
+      try {
+        const parsedTasks: Task[] = JSON.parse(tasksCache)
+        this._tasks.set(parsedTasks)
+      } catch (error) {
+        console.error('Failed to parse tasks from localStorage:', error)
+      }
+    }
+
+    effect(() => localStorage.setItem(LocalStorage.TASKS, JSON.stringify(this._tasks())))
+
+    effect(() => {
+      const tasks = this._tasks();
+      console.log('[UPDATE] Total Tasks', tasks);
+    })
+
+    effect((onCleanup) => {
+      const tasks = this._tasks();
+
+      if (tasks.length > 0) {
+        const lastTask = tasks[tasks.length - 1]
+        console.log(`[ADD] Task ${lastTask.title}`)
+      }
+    })
+  }
 
   completedTasksCount = computed(() => this._tasks().filter((t) => t.completed).length);
   pendingTasksCount = computed(() => this._tasks().length - this.completedTasksCount());
