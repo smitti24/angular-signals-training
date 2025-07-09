@@ -1,11 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Task } from './task.model';
-
-export enum Filter {
-  'ALL' = 'All',
-  'PENDING' = 'Pending',
-  'COMPLETED' = 'Completed'
-}
+import { Filter, Task } from './task.model';
 
 @Injectable({
   providedIn: 'root'

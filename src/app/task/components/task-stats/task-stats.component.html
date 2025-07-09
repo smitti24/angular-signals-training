@@ -1,0 +1,29 @@
+@let pendingTask = pendingTasksCount();
+@let completedTask = completedTasksCount();
+@let totalTasks = pendingTask + completedTask;
+@let completionPercentage = totalTasks > 0 ? (completedTasksCount() / totalTasks) * 100 : 0;
+
+<div class="flex items-center">
+    @if (pendingTask > 0) { 
+      <div class="flex items-center gap-4 bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-3 rounded-2xl shadow-lg border border-orange-200">
+        <div class="flex items-center gap-2 bg-green-100 px-3 py-1 rounded-full">
+          <span class="text-green-600">✅</span>
+          <span class="text-green-800 font-semibold text-sm">{{ completedTask }} Done</span>
+        </div>
+        <div class="flex items-center gap-2 bg-orange-100 px-3 py-1 rounded-full">
+          <span class="text-orange-600">⏳</span>
+          <span class="text-orange-800 font-semibold text-sm">{{ pendingTask }} Left</span>
+        </div>
+        <div class="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-3 rounded-2xl shadow-lg border border-green-200 text-green-600">    
+          {{completionPercentage}}%
+        </div>
+      </div>
+
+    } @else {
+      <div class="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-3 rounded-2xl shadow-lg border border-green-200">
+        <span class="text-green-600 text-xl">🎉</span>
+        <span class="text-green-800 font-semibold">All Done!</span>
+        <span class="text-green-600 text-xl">🎉</span>
+      </div>
+    }
+  </div>

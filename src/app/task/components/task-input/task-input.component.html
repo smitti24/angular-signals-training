@@ -1,0 +1,17 @@
+<div class="text-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Task Manager</h1>
+    <div class="max-w-md mx-auto">
+      <input 
+        type="text"
+        class="w-full border-2 border-gray-300 rounded-lg p-3 text-lg focus:border-blue-500 focus:outline-none transition-colors"
+        [class.border-red-500]="taskControl.invalid && taskControl.touched"
+        [formControl]="taskControl"
+        placeholder="What needs to be done?"
+        (keyup)="onKeyUp($event)"
+      />
+      <p class="text-sm text-gray-500 mt-2">Press Enter to add</p>
+      @if (taskControl.invalid && taskControl.touched) {
+        <p class="text-sm text-red-500 mt-1">Please enter a valid task</p>
+      }
+    </div>
+  </div>

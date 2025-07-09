@@ -1,14 +1,16 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Filter, TaskService } from './task.service';
-import { NgClass } from '@angular/common';
+import { TaskService } from './task.service';
+import { TaskFilterButtonComponent } from './components/task-summary/task-filter-button.component';
+import { TaskStatsComponent } from './components/task-stats/task-stats.component';
+import { TaskListComponent } from './components/task-list/task-list.component';
+import { TaskInputComponent } from './components/task-input/task-input.component';
 
 @Component({
   selector: 'app-task',
-  imports: [NgClass],
+  imports: [TaskFilterButtonComponent, TaskStatsComponent, TaskListComponent, TaskInputComponent],
   templateUrl: './task.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TaskComponent {
   taskService = inject(TaskService)
-  Filter = Filter
 }
