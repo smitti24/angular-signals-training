@@ -458,3 +458,17 @@ effect((onCleanup) => {
 | **RxJS Subscriptions** | `subscription.unsubscribe()` |
 | **WebSocket Connections** | `socket.close()` |
 
+
+## Day 5: RxJS & Signals Interop
+
+#### When to use each?
+
+| **Signals** | **RxJS Observables** |
+|-------------------|-------------------|
+| **Sync state management** | `Async event streams` |
+| **Template reactivity** | `Complex async operations` |
+| **Low Overhead** | `Powerful operators` |
+
+#### Key interop Functions
+-- toObservable() -> Converts a signal to a observable -> const obs$ = toObservable(this.signal)
+-- toSignal() -> Converts a observable to a signal -> const data = toSignal(obs$)

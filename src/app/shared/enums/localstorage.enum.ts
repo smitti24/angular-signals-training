@@ -1,3 +1,4 @@
 export enum LocalStorage {
-    'TASKS' = 'tasks'
+    'TASKS' = 'tasks',
+    'API_TASKS' = 'api_tasks'
 }

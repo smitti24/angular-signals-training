@@ -4,6 +4,7 @@ import { TaskFilterButtonComponent } from './components/task-summary/task-filter
 import { TaskStatsComponent } from './components/task-stats/task-stats.component';
 import { TaskListComponent } from './components/task-list/task-list.component';
 import { TaskInputComponent } from './components/task-input/task-input.component';
+import { TaskApiService } from './task-api.service';
 
 @Component({
   selector: 'app-task',
@@ -13,4 +14,6 @@ import { TaskInputComponent } from './components/task-input/task-input.component
 })
 export class TaskComponent {
   taskService = inject(TaskService)
+
+  taskApiService = inject(TaskApiService)
 }
