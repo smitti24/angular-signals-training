@@ -379,3 +379,82 @@ queueMicrotask(() => filter.set('active')) // Effect will run twice
 ✅ Normally: Effects batch updates for performance.
 ✅ Edge Cases: Async operations (setTimeout, HTTP) can split batches.
 ✅ Debug Tip: Use effect.onTrigger(() => console.log('Triggered')) to log dependency changes.
+
+
+## Day 4: Performance Deep Dive
+
+### Advanced Signal Optimization Techniques
+
+#### 1. Using `untracked()` for Performance
+
+Use `untracked()` when you need to read a signal's value without creating a dependency:
+
+**Purpose:** Read signals without triggering re-computations or re-runs.
+
+```typescript
+import { effect, untracked } from '@angular/core'
+
+effect(() => {
+    // This effect will ONLY run when tasks() changes
+    const currentFilter = untracked(() => filter())
+    console.log(`Tasks updated: ${tasks().length}, Current filter: ${currentFilter}`)
+})
+```
+
+**When to Use:**
+- Reading configuration values that shouldn't trigger updates
+- Accessing user preferences for logging purposes
+- Breaking circular dependencies
+
+#### 2. Computed Signal Caching & Memoization
+
+Computed signals automatically cache their results until dependencies change:
+
+**❌ Inefficient Pattern:**
+```typescript
+const expensiveComputation = computed(() => {
+    return tasks().map(task => performHeavyCalculation(task))
+})
+// Recalculates on EVERY task change, even minor ones
+```
+
+**✅ Optimized Pattern:**
+```typescript
+const optimizedComputation = computed(() => {
+    const completedTasks = tasks().filter(task => task.isCompleted)
+    // Heavy calculation only runs when completed tasks change
+    return completedTasks.map(task => performHeavyCalculation(task))
+})
+```
+
+**Performance Benefits:**
+- **Memoization**: Cached until dependencies change
+- **Granular Updates**: Only recalculates when relevant data changes
+- **Lazy Evaluation**: Computed only when accessed
+
+#### 3. Resource Cleanup & Memory Management
+
+Always clean up resources in effects to prevent memory leaks:
+
+```typescript
+import { effect } from '@angular/core'
+
+effect((onCleanup) => {
+    const timer = setInterval(() => {
+        console.log('Background task running...')
+    }, 1000)
+    
+    // Critical: Clean up to prevent memory leaks
+    onCleanup(() => clearInterval(timer))
+})
+```
+
+**Common Cleanup Scenarios:**
+
+| **Resource Type** | **Cleanup Method** |
+|-------------------|-------------------|
+| **Intervals/Timeouts** | `clearInterval()`, `clearTimeout()` |
+| **Event Listeners** | `removeEventListener()` |
+| **RxJS Subscriptions** | `subscription.unsubscribe()` |
+| **WebSocket Connections** | `socket.close()` |
+

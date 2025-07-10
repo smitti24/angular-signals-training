@@ -1,6 +1,8 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, signal, computed, effect, untracked } from '@angular/core';
 import { Filter, Task } from './task.model';
 import { LocalStorage } from '../shared/enums/localstorage.enum';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +19,9 @@ export class TaskService {
   private _filter = signal<Filter>(Filter.ALL)
   activeFilter = this._filter.asReadonly();
 
+  private _isDirty = signal<boolean>(false)
+  isDirty = this._isDirty.asReadonly();
+
   constructor() {
     const tasksCache: string | null = localStorage.getItem(LocalStorage.TASKS)
 
@@ -29,10 +34,20 @@ export class TaskService {
       }
     }
 
-    effect(() => localStorage.setItem(LocalStorage.TASKS, JSON.stringify(this._tasks())))
+    const tasks$ = toObservable(this._tasks).pipe(
+      debounceTime(1000),
+      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
+    );
+
+    effect((onCleanup) => {
+      const sub = tasks$.subscribe(tasks => {
+        localStorage.setItem(LocalStorage.TASKS, JSON.stringify(tasks));
+      });
+      onCleanup(() => sub.unsubscribe());
+    })
 
     effect(() => {
-      const tasks = this._tasks();
+      const tasks = this._tasks()
       console.log('[UPDATE] Total Tasks', tasks);
     })
 
@@ -44,7 +59,14 @@ export class TaskService {
         console.log(`[ADD] Task ${lastTask.title}`)
       }
     })
+
+    effect(() => {
+      this.tasks()
+      this._isDirty.set(true)
+    })
   }
+
+
 
   completedTasksCount = computed(() => this._tasks().filter((t) => t.completed).length);
   pendingTasksCount = computed(() => this._tasks().length - this.completedTasksCount());
@@ -82,5 +104,9 @@ export class TaskService {
 
   deleteTask(id: string) {
     this._tasks.update((tasks: Task[]) => tasks.filter((t) => t.id !== id));
+  }
+
+  private saveToServer(): void {
+    this._isDirty.set(false)
   }
 }
