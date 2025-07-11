@@ -1,26 +1,29 @@
 <div class="min-h-screen bg-gray-50 py-8 px-4 w-full">
   <app-task-input (addTask)="taskApiService.addTaskToApi($event)" />
 
-      <div class="flex flex-row justify-between items-center mb-8">
-          <app-task-filter-button [activeFilter]="taskService.activeFilter()" (filterChange)="taskService.toggleFilter($event)" />
+  <div class="flex flex-row justify-between items-center mb-8">
+    <app-task-filter-button [activeFilter]="taskApiService.activeFilter()"
+      (filterChange)="taskApiService.filterTasks($event)" />
 
-        <app-task-stats [pendingTasksCount]="taskService.pendingTasksCount()" [completedTasksCount]="taskService.completedTasksCount()" />
-      </div>
-      
-      
+    <app-task-stats [pendingTasksCount]="taskApiService.pendingTasks()"
+      [completedTasksCount]="taskApiService.completedTasks()" />
+  </div>
 
-      <div>
-        <h2>Tasks from API</h2>
-        @if (taskApiService.isLoading()) {
-          <div>Loading...</div>
-        }
-        @if (taskApiService.error()) {
-          <div>Error: {{ taskApiService.error() }}</div>
-        }
-        @if (taskApiService.tasks()) {
-            <div class="flex flex-col gap-2">
-              <app-task-list [filteredTasks]="taskApiService.tasks()" (toggleTask)="taskService.toggleTask($event)" (deleteTask)="taskService.deleteTask($event)" />
-          </div>
-        }
-      </div>
+
+
+  <div class="mb-8">
+    <h2 class="text-2xl font-bold mb-4">Tasks from API ({{ taskApiService.totalTasks() }})</h2>
+    @if (taskApiService.isLoading()) {
+    <div>Loading...</div>
+    }
+    @if (taskApiService.error()) {
+    <div>Error: {{ taskApiService.error() }}</div>
+    }
+    @if (taskApiService.filteredTasks()) {
+    <div class="flex flex-col gap-2">
+      <app-task-list [filteredTasks]="taskApiService.filteredTasks()" (toggleTask)="taskApiService.toggleTask($event)"
+        (deleteTask)="taskApiService.deleteTask($event)" />
+    </div>
+    }
+  </div>
 </div>
