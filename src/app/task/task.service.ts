@@ -2,6 +2,7 @@ import { httpResource, HttpResourceRef } from '@angular/common/http';
 import { computed, effect, Injectable, ResourceStatus, signal, Signal, untracked } from '@angular/core';
 import { Filter, Task } from './task.model';
 import { LocalStorage } from '../shared/enums/localstorage.enum';
+import { toSignal } from '@angular/core/rxjs-interop'
 
 // httpResource returns multiple signals
 interface ResourceRef<T> {
@@ -46,7 +47,7 @@ export class TaskService {
     })
 
     completedTasks = computed(() => this.tasks().filter((task) => task.completed).length)
-    pendingTasks = computed(() => untracked(() => this._tasks().length) - this.completedTasks())
+    pendingTasks = computed(() => this._tasks().length - this.completedTasks());
     totalTasks = computed(() => this.pendingTasks() + this.completedTasks())
 
     constructor() {
@@ -55,7 +56,7 @@ export class TaskService {
         effect(() => {
             const tasks = this._tasks()
 
-            if (tasks) {
+            if (tasks.length > 0) {
                 localStorage.setItem(LocalStorage.API_TASKS, JSON.stringify(tasks))
                 console.log('[API] Tasks saved to Cache')
                 this._isDirty.set(true)
@@ -97,23 +98,7 @@ export class TaskService {
 
     private initializeTasks(): void {
         const tasksCache = localStorage.getItem(LocalStorage.API_TASKS)
-
-        if (tasksCache) {
-            this._tasks.set(JSON.parse(tasksCache))
-            console.log('[CACHE] Tasks retrieved from Cache')
-        } else {
-            // get fresh data from the api
-            this.loadFromApi();
-        }
-
-        // If the tasks signal changes, add it to local storage
-        effect(() => {
-            const tasks = this._tasks()
-
-            if (tasks) {
-                localStorage.setItem(LocalStorage.API_TASKS, JSON.stringify(tasks))
-            }
-        })
+        if (!tasksCache) this.loadFromApi();
     }
 
     private loadFromApi(): void {
@@ -126,8 +111,11 @@ export class TaskService {
                 this._tasks.set(apiTasks)
                 console.log('[API] Tasks retrieved from API')
             }
-
         })
+    }
+
+    refreshTasks(): void {
+        this._httpTasks?.reload();
     }
 
     private saveToServer(): void {
