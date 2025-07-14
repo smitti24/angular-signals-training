@@ -1,6 +1,6 @@
 import { NgClass } from '@angular/common';
 import { Component, input, output, Signal } from '@angular/core';
-import { Filter } from '../../task.model';
+import { Filter } from '../../models/task.model';
 
 @Component({
   selector: 'app-task-filter-button',

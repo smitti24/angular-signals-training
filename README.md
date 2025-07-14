@@ -472,3 +472,116 @@ effect((onCleanup) => {
 #### Key interop Functions
 -- toObservable() -> Converts a signal to a observable -> const obs$ = toObservable(this.signal)
 -- toSignal() -> Converts a observable to a signal -> const data = toSignal(obs$)
+
+
+# 📆 Day 6: Global State & Undo/Redo with Angular Signals
+
+## 🧠 Learning Goals
+
+- Understand how to manage **global state** using Angular Signals
+- Learn how to implement **undo/redo functionality** with the **Command Pattern**
+- Explore how to maintain **time travel state** using a simple history model
+- Discuss when to debounce actions for **performance optimization**
+
+---
+
+## 🔁 Global State with Signals
+
+Angular Signals are perfect for building reactive, centralized state without boilerplate.
+
+### ✅ Why Use Signals for Global State?
+
+| Benefit | Description |
+|--------|-------------|
+| 🚫 No Boilerplate | No actions, reducers, or selectors |
+| ✅ Granular Reactivity | Only the components that depend on changed data will re-render |
+| 💡 Simplicity | No `.subscribe()`, no RxJS for basic app state |
+| 🔒 Encapsulation | Private mutations via service methods |
+| 🔍 Type-Safe | Leverage full power of TypeScript |
+
+---
+
+### 🧪 Example: Creating Global State in a Service
+
+```typescript
+@Injectable({ providedIn: 'root' })
+export class GlobalState {
+  private _data = signal<Data>(initialState)
+
+  public data = this._data.asReadonly() // Expose immutable state
+
+  set(newState: Data) {
+    this._data.set(newState)
+  }
+
+  update(updater: (state: Data) => Data) {
+    this._data.update(updater)
+  }
+}
+```
+
+🧠 You can inject this service anywhere and Angular will handle reactive updates.
+
+🕹️ Undo/Redo with the Command Pattern
+🧱 Command Pattern Basics
+
+Each user action is wrapped in a Command object that can execute() and undo() itself.
+
+```typescript
+interface Command {
+  execute(): void
+  undo(): void
+  description: string
+}
+
+class AddTaskCommand implements Command {
+  constructor(private task: Task, private taskService: TaskService) {}
+
+  execute(): void {
+    this.taskService.addTask(this.task)
+  }
+
+  undo(): void {
+    this.taskService.deleteTask(this.task.id)
+  }
+
+  description = `Add task: ${this.task.title}`
+}
+```
+
+🧠 This creates fully reversible actions — ideal for undo/redo and debugging.
+
+🧭 Managing Time Travel State
+To support undo/redo, use a simple History<T> state model:
+
+Time Travel: How It Works
+✅ Save current state in past before any change
+✅ Apply change → present = new state
+✅ Clear future (redo history)
+🔁 Undo → Move present → future, pop past
+🔁 Redo → Move present → past, pop future
+
+```typescript
+interface History<T> {
+  past: T[]
+  present: T
+  future: T[]
+}
+
+// Initial state
+{ past: [], present: StateA, future: [] }
+
+// After an action
+{ past: [StateA], present: StateB, future: [] }
+
+// Undo
+{ past: [], present: StateA, future: [StateB] }
+
+// Redo
+{ past: [StateA], present: StateB, future: [] }
+```
+
+🧠 What Happens on Undo?
+Move present to future
+
+Pop last item from past and make it the new present

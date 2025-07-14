@@ -1,8 +1,8 @@
 import { httpResource, HttpResourceRef } from '@angular/common/http';
-import { computed, effect, Injectable, ResourceStatus, signal, Signal, untracked } from '@angular/core';
-import { Filter, Task } from './task.model';
-import { LocalStorage } from '../shared/enums/localstorage.enum';
-import { toSignal } from '@angular/core/rxjs-interop'
+import { computed, effect, Injectable, ResourceStatus, signal, Signal } from '@angular/core';
+import { Filter, Task } from '../models/task.model';
+import { LocalStorage } from '../../shared/enums/localstorage.enum';
+
 
 // httpResource returns multiple signals
 interface ResourceRef<T> {
