@@ -1,5 +1,5 @@
 export interface History<T> {
-    past: T[],
-    present: T[],
-    future: []
+    past: T[]
+    present: T
+    future: T[]
 }

@@ -1,7 +1,8 @@
 import { httpResource, HttpResourceRef } from '@angular/common/http';
-import { computed, effect, Injectable, ResourceStatus, signal, Signal } from '@angular/core';
+import { computed, effect, inject, Injectable, ResourceStatus, signal, Signal } from '@angular/core';
 import { Filter, Task } from '../models/task.model';
 import { LocalStorage } from '../../shared/enums/localstorage.enum';
+import { HistoryService } from './history.service';
 
 
 // httpResource returns multiple signals
@@ -15,6 +16,8 @@ interface ResourceRef<T> {
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
+    private readonly historyService = inject(HistoryService)
+
     private apiUrl = 'https://jsonplaceholder.typicode.com/todos'
     private _httpTasks?: HttpResourceRef<Task[] | undefined>
 
@@ -78,7 +81,9 @@ export class TaskService {
             title: task,
             completed: false
         }
-        this._tasks.update((tasks) => [newTask, ...tasks!])
+        const updatedTasks = [newTask, ...this._tasks()]
+        this._tasks.set(updatedTasks)
+        this.historyService.saveSnapshot(updatedTasks)
     }
 
     filterTasks(filter: Filter) {
@@ -86,14 +91,38 @@ export class TaskService {
     }
 
     toggleTask(id: string) {
-        this._tasks.update((tasks: Task[]) => tasks.map(task => task.id === id ? {
+        const newTasks = this._tasks().map(task => task.id === id ? {
             ...task,
             completed: !task.completed
-        } : task))
+        } : task)
+        this._tasks.set(newTasks)
+        this.historyService.saveSnapshot(newTasks)
+    }
+
+    undo() {
+        this.historyService.undo()
+        const snapshot = this.historyService.snapshot
+        if (snapshot) this._tasks.set(snapshot)
+    }
+
+    redo() {
+        this.historyService.redo()
+        const snapshot = this.historyService.snapshot
+        if (snapshot) this._tasks.set(snapshot)
+    }
+
+    canUndo(): boolean {
+        return this.historyService.canUndo()
+    }
+
+    canRedo(): boolean {
+        return this.historyService.canRedo()
     }
 
     deleteTask(id: string) {
-        this._tasks.update(tasks => tasks.filter(t => t.id !== id))
+        const filteredTasks = this._tasks().filter(t => t.id !== id)
+        this._tasks.set(filteredTasks)
+        this.historyService.saveSnapshot(filteredTasks)
     }
 
     private initializeTasks(): void {

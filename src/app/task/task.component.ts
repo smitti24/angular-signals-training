@@ -4,6 +4,7 @@ import { TaskStatsComponent } from './components/task-stats/task-stats.component
 import { TaskListComponent } from './components/task-list/task-list.component';
 import { TaskInputComponent } from './components/task-input/task-input.component';
 import { TaskService } from './services/task.service';
+import { HistoryService } from './services/history.service';
 
 @Component({
   selector: 'app-task',
@@ -12,4 +13,5 @@ import { TaskService } from './services/task.service';
 })
 export class TaskComponent {
   taskService = inject(TaskService)
+  historyService = inject(HistoryService)
 }
