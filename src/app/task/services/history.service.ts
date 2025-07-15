@@ -6,19 +6,20 @@ import { History } from '../models/history.model'
   providedIn: 'root'
 })
 export class HistoryService {
-  private history = signal<History<Task[]>>({
+  private _history = signal<History<Task[]>>({
     past: [],
     present: [],
     future: []
   })
+  readonly history = this._history.asReadonly()
 
   get snapshot(): Task[] {
-    return this.history().present
+    return this._history().present
   }
 
   saveSnapshot(newPresent: Task[]): void {
-    const { past, present } = this.history()
-    this.history.set({
+    const { past, present } = this._history()
+    this._history.set({
       past: [...past, present],
       present: newPresent,
       future: []
@@ -26,11 +27,11 @@ export class HistoryService {
   }
 
   undo(): void {
-    const { past, present, future } = this.history()
+    const { past, present, future } = this._history()
     if (!past.length) return
 
     const previous = past[past.length - 1]
-    this.history.set({
+    this._history.set({
       past: past.slice(0, -1),
       present: previous,
       future: [present, ...future]
@@ -38,11 +39,11 @@ export class HistoryService {
   }
 
   redo(): void {
-    const { past, present, future } = this.history()
+    const { past, present, future } = this._history()
     if (!future.length) return
 
     const next = future[0]
-    this.history.set({
+    this._history.set({
       past: [...past, present],
       present: next,
       future: future.slice(1)
@@ -50,10 +51,10 @@ export class HistoryService {
   }
 
   canUndo(): boolean {
-    return this.history().past.length > 0
+    return this._history().past.length > 0
   }
 
   canRedo(): boolean {
-    return this.history().future.length > 0
+    return this._history().future.length > 0
   }
 }

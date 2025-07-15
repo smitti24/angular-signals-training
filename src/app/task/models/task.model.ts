@@ -9,3 +9,9 @@ export enum Filter {
     'PENDING' = 'Pending',
     'COMPLETED' = 'Completed'
 }
+
+export interface Command {
+    execute(): void;
+    undo(): void;
+    description: string;
+}

@@ -551,15 +551,9 @@ class AddTaskCommand implements Command {
 
 🧠 This creates fully reversible actions — ideal for undo/redo and debugging.
 
-🧭 Managing Time Travel State
-To support undo/redo, use a simple History<T> state model:
+### 🕹️ Time Travel State Management
 
-Time Travel: How It Works
-✅ Save current state in past before any change
-✅ Apply change → present = new state
-✅ Clear future (redo history)
-🔁 Undo → Move present → future, pop past
-🔁 Redo → Move present → past, pop future
+To support undo/redo, use a simple `History<T>` state model:
 
 ```typescript
 interface History<T> {
@@ -581,7 +575,22 @@ interface History<T> {
 { past: [StateA], present: StateB, future: [] }
 ```
 
-🧠 What Happens on Undo?
-Move present to future
+#### 🧠 What Happens on Undo?
 
-Pop last item from past and make it the new present
+1. Move `present` to `future`
+2. Pop last item from `past` and make it the new `present`
+
+### 📋 The Command Pattern
+
+**What:** A way to treat actions as objects with:
+- `execute()`: Do the action (e.g., add a task to `_tasks`)
+- `undo()`: Reverse the action (e.g., remove the task)
+- `description`: Describe the action
+
+**Why it fits with signals:**
+- Store commands in a signal to make history reactive
+- Use `computed` for `canUndo`/`canRedo` to enable/disable buttons
+- Use `effect` to log or persist history changes
+
+#### 🧠 Analogy
+Think of the Command Pattern like a "recipe book" for your app. Each recipe (command) says how to cook a dish (execute an action) and how to "un-cook" it (undo). Signals are the kitchen staff, automatically updating the menu (UI) when you add or remove recipes.
